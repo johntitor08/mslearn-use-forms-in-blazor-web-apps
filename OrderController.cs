@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlazingPizza.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,14 +11,9 @@ namespace BlazingPizza
     [Route("orders")]
     [ApiController]
 
-    public class OrdersController : Controller
+    public class OrdersController(PizzaStoreContext db) : Controller
     {
-        private readonly PizzaStoreContext _db;
-
-        public OrdersController(PizzaStoreContext db)
-        {
-            _db = db;
-        }
+        private readonly PizzaStoreContext _db = db;
 
         [HttpGet]
         public async Task<ActionResult<List<OrderWithStatus>>> GetOrders()
@@ -59,12 +55,12 @@ namespace BlazingPizza
                 .Include(o => o.Pizzas).ThenInclude(p => p.Special)
                 .Include(o => o.Pizzas).ThenInclude(p => p.Toppings).ThenInclude(t => t.Topping)
                 .SingleOrDefaultAsync();
-        
+
             if (order == null)
             {
                 return NotFound();
             }
-        
+
             return OrderWithStatus.FromOrder(order);
         }
     }

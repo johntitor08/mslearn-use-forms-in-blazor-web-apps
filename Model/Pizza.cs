@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace BlazingPizza
+namespace BlazingPizza.Model
 {
     /// <summary>
     /// Represents a customized pizza as part of an order
@@ -31,7 +31,7 @@ namespace BlazingPizza
 
         public decimal GetTotalPrice()
         {
-            return GetBasePrice(); 
+            return GetBasePrice();
         }
 
         public string GetFormattedTotalPrice()

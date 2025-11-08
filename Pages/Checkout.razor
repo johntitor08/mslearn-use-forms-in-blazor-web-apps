@@ -1,33 +1,55 @@
 @page "/checkout"
+@using BlazingPizza.Model
+@using Microsoft.AspNetCore.Components.Forms
 @inject OrderState OrderState
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 @implements IDisposable
 
-<div class="main">
-    <EditForm EditContext=editContext OnValidSubmit=PlaceOrder>
-        <div class="checkout-cols">
-            <div class="checkout-order-details">
-                <h4>Review order</h4>
-                <OrderReview Order="Order" />
-            </div>
+<div class="form-field">
+    <label>Name:</label>
+    <div>
+        <InputText @bind-Value="Address.Name" class="form-control" />
+        <ValidationMessage TValue="string" For="@(() => Address.Name)"></ValidationMessage>
+    </div>
+</div>
 
-            <div class="checkout-delivery-address">
-                <h4>Deliver to...</h4>
-                @if (isError)
-                {
-                    <div class="alert alert-danger">Please enter a name and address.</div>
-                }
-                <AddressEditor Address="Order.DeliveryAddress" />
-            </div>
-        </div>
+<div class="form-field">
+    <label>Line 1:</label>
+    <div>
+        <InputText @bind-Value="Address.Line1" class="form-control" />
+        <ValidationMessage TValue="string" For="@(() => Address.Line1)"></ValidationMessage>
+    </div>
+</div>
 
-        <button class="checkout-button btn btn-warning" type="Submit" disabled=@isError> Place order</button>
-        <DataAnnotationsValidator />
-    </EditForm>
+<div class="form-field">
+    <label>City:</label>
+    <div>
+        <InputText @bind-Value="Address.City" class="form-control" />
+        <ValidationMessage TValue="string" For="@(() => Address.City)"></ValidationMessage>
+    </div>
+</div>
+
+<div class="form-field">
+    <label>Region:</label>
+    <div>
+        <InputText @bind-Value="Address.Region" class="form-control" />
+        <ValidationMessage TValue="string" For="@(() => Address.Region)"></ValidationMessage>
+    </div>
+</div>
+
+<div class="form-field">
+    <label>Postal code:</label>
+    <div>
+        <InputText @bind-Value="Address.PostalCode" class="form-control" />
+        <ValidationMessage TValue="string" For="@(() => Address.PostalCode)"></ValidationMessage>
+    </div>
 </div>
 
 @code {
+    [Parameter]
+    public Address Address { get; set; }
+
     Order Order => OrderState.Order;
     bool isSubmitting;
     bool isError = false;

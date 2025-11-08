@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BlazingPizza.Model;
 
 namespace BlazingPizza
 {
@@ -15,7 +16,7 @@ namespace BlazingPizza
                 Special = special,
                 SpecialId = special.Id,
                 Size = Pizza.DefaultSize,
-                Toppings = new List<PizzaTopping>(),
+                Toppings = [],
             };
 
             ShowingConfigureDialog = true;
@@ -40,7 +41,7 @@ namespace BlazingPizza
         {
             Order.Pizzas.Remove(pizza);
         }
-        
+
         public void ResetOrder()
         {
             Order = new Order();
