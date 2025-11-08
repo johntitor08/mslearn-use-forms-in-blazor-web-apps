@@ -47,17 +47,18 @@
 </div>
 
 @code {
-    [Parameter]
-    public Address Address { get; set; }
+    [Parameter] public Address Address { get; set; }
 
     Order Order => OrderState.Order;
-    bool isSubmitting;
     bool isError = false;
     private EditContext editContext;
 
     async Task PlaceOrder()
     {
-        var response = await HttpClient.PostAsJsonAsync(NavigationManager.BaseUri + "orders", OrderState.Order);
+        var response = await HttpClient.PostAsJsonAsync(
+        NavigationManager.BaseUri + "orders",
+        OrderState.Order
+        );
         var newOrderId = await response.Content.ReadFromJsonAsync<int>();
         OrderState.ResetOrder();
         NavigationManager.NavigateTo($"myorders/{newOrderId}");
@@ -65,7 +66,6 @@
 
     private async Task CheckSubmission(EditContext editContext)
     {
-        isSubmitting = true;
         var model = editContext.Model as Address;
         isError = string.IsNullOrWhiteSpace(model?.Name)
         || string.IsNullOrWhiteSpace(model?.Line1)
@@ -74,7 +74,6 @@
         {
             await PlaceOrder();
         }
-        isSubmitting = false;
     }
 
     protected void ShowError()
@@ -84,7 +83,13 @@
 
     protected override void OnInitialized()
     {
-        editContext = new(Order.DeliveryAddress);
+        if (Order.DeliveryAddress == null)
+        {
+            Order.DeliveryAddress = new Address();
+        }
+
+        Address = Order.DeliveryAddress;
+        editContext = new EditContext(Address);
         editContext.OnFieldChanged += HandleFieldChanged;
     }
 
