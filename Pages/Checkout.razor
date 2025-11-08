@@ -50,7 +50,7 @@
     </div>
 
     <!-- Submit butonu -->
-    <button type="submit" class="btn btn-warning" disabled="@isError || isSubmitting">
+    <button type="submit" class="btn btn-warning" disabled="@(!editContext.Validate() || isSubmitting)">
         @if (isSubmitting)
         {
             <span>Submitting...</span>
@@ -61,12 +61,6 @@
         }
     </button>
 
-    @if (isError && !isSubmitting)
-    {
-        <div class="alert alert-danger mt-2">
-            Please fill in all required fields correctly.
-        </div>
-    }
 </EditForm>
 
 @code {
@@ -75,12 +69,12 @@
 
     Order Order => OrderState.Order;
 
-    bool isError = false;
-    bool isSubmitting = false;
+    private bool isSubmitting = false;
     private EditContext editContext;
 
     protected override void OnInitialized()
     {
+        // Eğer DeliveryAddress null ise yeni bir Address oluştur
         if (Order.DeliveryAddress == null)
         {
             Order.DeliveryAddress = new Address();
@@ -90,27 +84,20 @@
 
         editContext = new EditContext(Address);
         editContext.OnFieldChanged += HandleFieldChanged;
-
-        ValidateForm();
     }
 
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
-        ValidateForm();
+        // Alan değiştikçe UI güncellensin
         StateHasChanged();
-    }
-
-    private void ValidateForm()
-    {
-        isError = !editContext.Validate();
     }
 
     private async Task PlaceOrder()
     {
-        // Submit sırasında disable ve loading
         isSubmitting = true;
         StateHasChanged();
 
+        // Sadece form valid ise gönder
         if (editContext.Validate())
         {
             var response = await HttpClient.PostAsJsonAsync(
@@ -121,10 +108,6 @@
 
             OrderState.ResetOrder();
             NavigationManager.NavigateTo($"myorders/{newOrderId}");
-        }
-        else
-        {
-            isError = true;
         }
 
         isSubmitting = false;
