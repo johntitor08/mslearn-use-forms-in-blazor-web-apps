@@ -13,7 +13,7 @@
         <label>Name:</label>
         <div>
             <InputText @bind-Value="Address.Name" class="form-control" />
-            <ValidationMessage TValue="string" For="@(() => Address.Name)"></ValidationMessage>
+            <ValidationMessage TValue="string" For="@(() => Address.Name)" />
         </div>
     </div>
 
@@ -21,7 +21,7 @@
         <label>Line 1:</label>
         <div>
             <InputText @bind-Value="Address.Line1" class="form-control" />
-            <ValidationMessage TValue="string" For="@(() => Address.Line1)"></ValidationMessage>
+            <ValidationMessage TValue="string" For="@(() => Address.Line1)" />
         </div>
     </div>
 
@@ -29,7 +29,7 @@
         <label>City:</label>
         <div>
             <InputText @bind-Value="Address.City" class="form-control" />
-            <ValidationMessage TValue="string" For="@(() => Address.City)"></ValidationMessage>
+            <ValidationMessage TValue="string" For="@(() => Address.City)" />
         </div>
     </div>
 
@@ -37,7 +37,7 @@
         <label>Region:</label>
         <div>
             <InputText @bind-Value="Address.Region" class="form-control" />
-            <ValidationMessage TValue="string" For="@(() => Address.Region)"></ValidationMessage>
+            <ValidationMessage TValue="string" For="@(() => Address.Region)" />
         </div>
     </div>
 
@@ -45,11 +45,28 @@
         <label>Postal code:</label>
         <div>
             <InputText @bind-Value="Address.PostalCode" class="form-control" />
-            <ValidationMessage TValue="string" For="@(() => Address.PostalCode)"></ValidationMessage>
+            <ValidationMessage TValue="string" For="@(() => Address.PostalCode)" />
         </div>
     </div>
 
-    <button type="submit" class="btn btn-warning" disabled="@isError">Place order</button>
+    <!-- Submit butonu -->
+    <button type="submit" class="btn btn-warning" disabled="@isError || isSubmitting">
+        @if (isSubmitting)
+        {
+            <span>Submitting...</span>
+        }
+        else
+        {
+            <span>Place order</span>
+        }
+    </button>
+
+    @if (isError && !isSubmitting)
+    {
+        <div class="alert alert-danger mt-2">
+            Please fill in all required fields correctly.
+        </div>
+    }
 </EditForm>
 
 @code {
@@ -57,19 +74,10 @@
     public Address Address { get; set; }
 
     Order Order => OrderState.Order;
-    bool isError = false;
-    private EditContext editContext;
 
-    async Task PlaceOrder()
-    {
-        var response = await HttpClient.PostAsJsonAsync(
-        NavigationManager.BaseUri + "orders",
-        OrderState.Order
-        );
-        var newOrderId = await response.Content.ReadFromJsonAsync<int>();
-        OrderState.ResetOrder();
-        NavigationManager.NavigateTo($"myorders/{newOrderId}");
-    }
+    bool isError = false;
+    bool isSubmitting = false;
+    private EditContext editContext;
 
     protected override void OnInitialized()
     {
@@ -82,11 +90,44 @@
 
         editContext = new EditContext(Address);
         editContext.OnFieldChanged += HandleFieldChanged;
+
+        ValidateForm();
     }
 
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
+        ValidateForm();
+        StateHasChanged();
+    }
+
+    private void ValidateForm()
+    {
         isError = !editContext.Validate();
+    }
+
+    private async Task PlaceOrder()
+    {
+        // Submit sırasında disable ve loading
+        isSubmitting = true;
+        StateHasChanged();
+
+        if (editContext.Validate())
+        {
+            var response = await HttpClient.PostAsJsonAsync(
+            NavigationManager.BaseUri + "orders",
+            Order
+            );
+            var newOrderId = await response.Content.ReadFromJsonAsync<int>();
+
+            OrderState.ResetOrder();
+            NavigationManager.NavigateTo($"myorders/{newOrderId}");
+        }
+        else
+        {
+            isError = true;
+        }
+
+        isSubmitting = false;
         StateHasChanged();
     }
 
